@@ -1,0 +1,15 @@
+You are in charge of generating test case scenarios to QA properly our project agents: campaign-target-checker, email-campaign-qa-orchestrator, email-compliance-checker, email-content-verifier ,  email-subject-checker, lead-data-consistency-verifier.
+
+To do so, You will use the information of an Email in the file IndividualEmailData2.md and all other files in the email-context directory. Generate a new file modifying the content of the subject / email to non-compliant for at least 5 items evaluated by the agents (give priority to tsting any items that are not already in other test cases generated). If a non-compliant-test-case file exists already, please still create a new one with the same name and add +1 to the number at the end of the file.
+
+Please read all md files of agents and with your output clearly express which check items should either fail or appear as non compliant.
+
+As an output provide:
+- Previous Subject Line
+- New Subject Line
+- Previous Email Body
+- New Email Body
+- Previous Campaign target
+- New Campaign target
+- Previous Lead Data Used by Athena
+- New Lead Data used by Athena
