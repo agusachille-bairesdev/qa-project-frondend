@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local QA UI - Claude CLI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .animate-pulse-status {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    /* Markdown rendering styles */
+    .markdown-content h1 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; border-bottom: 2px solid #3b82f6; padding-bottom: 0.3em; color: #1e40af; }
+    .markdown-content h2 { font-size: 1.3em; font-weight: bold; margin: 0.5em 0; border-bottom: 1px solid #93c5fd; padding-bottom: 0.2em; color: #1e40af; }
+    .markdown-content h3 { font-size: 1.1em; font-weight: bold; margin: 0.5em 0; color: #1e3a8a; }
+    .markdown-content h4 { font-size: 1em; font-weight: bold; margin: 0.4em 0; color: #1e3a8a; }
+    .markdown-content p { margin: 0.5em 0; color: #374151; line-height: 1.6; }
+    .markdown-content ul { list-style-type: disc; margin-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; color: #374151; }
+    .markdown-content ol { list-style-type: decimal; margin-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; color: #374151; }
+    .markdown-content li { margin: 0.25em 0; }
+    .markdown-content pre {
+      background-color: #f8fafc;
+      color: #1e293b;
+      padding: 0.75em;
+      border-radius: 0.375rem;
+      border: 1px solid #e2e8f0;
+      overflow-x: auto;
+      margin: 0.5em 0;
+      font-size: 0.85em;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+    .markdown-content code { background-color: #e0e7ff; color: #3730a3; padding: 0.125em 0.25em; border-radius: 0.25rem; font-size: 0.9em; }
+    .markdown-content pre code { background-color: transparent; color: inherit; padding: 0; }
+    .markdown-content blockquote { border-left: 4px solid #60a5fa; padding-left: 1em; margin: 0.5em 0; color: #4b5563; background-color: #eff6ff; padding: 0.5em 1em; border-radius: 0.25rem; }
+    .markdown-content hr { border: 0; border-top: 2px solid #dbeafe; margin: 1em 0; }
+    .markdown-content a { color: #2563eb; text-decoration: underline; }
+    .markdown-content strong { font-weight: bold; color: #1f2937; }
+    .markdown-content em { font-style: italic; }
+    .markdown-content table { border-collapse: collapse; margin: 0.5em 0; }
+    .markdown-content th, .markdown-content td { border: 1px solid #e5e7eb; padding: 0.5em; }
+    .markdown-content th { background-color: #dbeafe; color: #1e40af; font-weight: 600; }
+    /* Tab styles */
+    .tab-button { padding: 0.375rem 0.75rem; font-size: 0.75rem; border-radius: 0.375rem 0.375rem 0 0; transition: all 0.15s; }
+    .tab-button.active { background-color: #eff6ff; border: 1px solid #bfdbfe; border-bottom: 1px solid #eff6ff; margin-bottom: -1px; font-weight: 600; color: #1e40af; }
+    .tab-button:not(.active) { background-color: #f3f4f6; color: #6b7280; }
+    .tab-button:not(.active):hover { background-color: #e5e7eb; color: #374151; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6 text-sm">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Local QA UI for Claude CLI</h1>
+
+    <!-- Two Column Layout: 40% input, 60% output -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <!-- LEFT COLUMN: Input (40%) -->
+      <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-4 flex flex-col h-[calc(100vh-10rem)]">
+        <label for="instructions" class="block text-xs font-medium text-gray-700 mb-2">
+          Instructions & Content
+        </label>
+        <textarea
+          id="instructions"
+          class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 resize-none"
+          placeholder="Enter your QA test instructions here..."
+        ></textarea>
+
+        <div class="mt-3 flex items-center">
+          <button
+            id="runButton"
+            class="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Run QA Test
+          </button>
+          <button
+            id="clearButton"
+            class="ml-2 px-4 py-1.5 text-xs bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+          >
+            Clear
+          </button>
+          <span
+            id="statusBadge"
+            class="ml-3 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600"
+          >
+            Idle
+          </span>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Output (60%) -->
+      <div class="lg:col-span-3 bg-white rounded-lg shadow-md p-4 flex flex-col h-[calc(100vh-10rem)]">
+        <!-- Tab Header -->
+        <div class="flex justify-between items-end mb-0">
+          <div class="flex">
+            <button id="tabMarkdown" class="tab-button active" onclick="switchTab('markdown')">Markdown</button>
+            <button id="tabJson" class="tab-button" onclick="switchTab('json')">JSON</button>
+          </div>
+          <div class="mb-1">
+            <button
+              id="formatButton"
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs mr-2 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed hidden font-medium border border-blue-300"
+            >
+              Format
+            </button>
+            <button
+              id="copyMdButton"
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed font-medium border border-blue-300"
+            >
+              Copy MD
+            </button>
+            <button
+              id="copyJsonButton"
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed hidden font-medium border border-blue-300"
+            >
+              Copy JSON
+            </button>
+          </div>
+        </div>
+        <!-- Output Containers -->
+        <div
+          id="outputMarkdown"
+          class="markdown-content bg-blue-50 p-3 rounded border border-blue-200 overflow-x-auto text-xs overflow-y-auto border-l-4 border-blue-300 flex-1"
+        >No output yet. Run a QA test to see results.</div>
+        <pre
+          id="outputJson"
+          class="bg-blue-50 p-3 rounded border border-blue-200 overflow-x-auto text-xs whitespace-pre-wrap overflow-y-auto border-l-4 border-blue-300 flex-1 hidden"
+        >No output yet. Run a QA test to see results.</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === MARKDOWN PARSER FUNCTIONS (from markdown-parser.js) ===
+    function parseJSONL(jsonlString) {
+        // First, try standard JSONL format (one JSON object per line)
+        try {
+            const lines = jsonlString.split('\n').filter(line => line.trim());
+            // Test if first line is valid JSON
+            if (lines.length > 0) {
+                JSON.parse(lines[0]);
+                return lines.map(line => JSON.parse(line));
+            }
+        } catch (e) {
+            // If line-by-line parsing fails, try parsing as multi-line JSON objects
+            const entries = [];
+            let depth = 0;
+            let currentEntry = '';
+
+            for (let i = 0; i < jsonlString.length; i++) {
+                const char = jsonlString[i];
+                currentEntry += char;
+
+                if (char === '{') depth++;
+                if (char === '}') depth--;
+
+                // When we reach depth 0 and have content, we have a complete object
+                if (depth === 0 && currentEntry.trim()) {
+                    try {
+                        entries.push(JSON.parse(currentEntry.trim()));
+                        currentEntry = '';
+                    } catch (parseError) {
+                        // Continue accumulating if parse fails
+                    }
+                }
+            }
+
+            return entries;
+        }
+
+        return [];
+    }
+
+    function formatDuration(ms) {
+        if (!ms) return '';
+        if (ms < 1000) return `${ms}ms`;
+        return `${(ms / 1000).toFixed(1)}s`;
+    }
+
+    function extractTextContent(content) {
+        if (!content) return '';
+        if (typeof content === 'string') return content;
+        if (Array.isArray(content)) {
+            return content
+                .map(item => {
+                    if (item.type === 'text') return item.text;
+                    if (item.type === 'tool_use') return `[Tool Call: ${item.name}]`;
+                    if (item.type === 'tool_result') return item.content;
+                    return '';
+                })
+                .filter(Boolean)
+                .join('\n');
+        }
+        return '';
+    }
+
+    function getIndent(level) {
+        return '    '.repeat(level);
+    }
+
+    function convertToMarkdown(jsonlString) {
+        const entries = parseJSONL(jsonlString);
+        const lines = [];
+
+        // Track tool calls to map results back
+        const toolCalls = new Map(); // tool_use_id -> { name, input, subagent_type, parent_tool_use_id }
+
+        // Track which parent_tool_use_id indicates a sub-agent context
+        const subAgentContexts = new Map(); // parent_tool_use_id -> subagent_type
+
+        // Map tool results to their tool_use_id for immediate rendering
+        const toolResults = new Map(); // tool_use_id -> { entry, item }
+
+        // Track which results have been rendered to avoid duplicates
+        const renderedResults = new Set(); // tool_use_id
+
+        let currentTimestamp = 0;
+
+        function getTimestamp() {
+            const mins = Math.floor(currentTimestamp / 60);
+            const secs = currentTimestamp % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // === PASS 1: Collect tool calls and results ===
+        for (const entry of entries) {
+            // Skip system init
+            if (entry.type === 'system' && entry.subtype === 'init') {
+                continue;
+            }
+
+            // Collect tool calls from assistant messages
+            if (entry.type === 'assistant' && entry.message?.content) {
+                const content = entry.message.content;
+                if (!Array.isArray(content)) continue;
+
+                for (const item of content) {
+                    if (item.type === 'tool_use') {
+                        const toolName = item.name;
+                        const toolInput = item.input || {};
+                        const subagentType = toolInput.subagent_type;
+
+                        // Store tool call info
+                        toolCalls.set(item.id, {
+                            name: toolName,
+                            input: toolInput,
+                            subagent_type: subagentType,
+                            parent_tool_use_id: entry.parent_tool_use_id
+                        });
+
+                        // Track sub-agent contexts
+                        if (toolName === 'Task' && subagentType) {
+                            subAgentContexts.set(item.id, subagentType);
+                        }
+                    }
+                }
+            }
+
+            // Collect tool results from user messages
+            if (entry.type === 'user' && entry.message?.content) {
+                const content = entry.message.content;
+                if (!Array.isArray(content)) continue;
+
+                for (const item of content) {
+                    if (item.type === 'tool_result' && item.tool_use_id) {
+                        // Store the result for later rendering with its call
+                        toolResults.set(item.tool_use_id, { entry, item });
+                    }
+                }
+            }
+        }
+
+        // === PASS 2: Render with grouping ===
+        for (const entry of entries) {
+            // === SYSTEM INIT === (skip)
+            if (entry.type === 'system' && entry.subtype === 'init') {
+                continue;
+            }
+
+            // === ASSISTANT MESSAGE ===
+            if (entry.type === 'assistant' && entry.message) {
+                const content = entry.message.content;
+                const isSubAgent = entry.parent_tool_use_id != null;
+                const subAgentType = isSubAgent ? subAgentContexts.get(entry.parent_tool_use_id) : null;
+                const actor = isSubAgent && subAgentType ? subAgentType.toUpperCase() : 'ORCHESTRATOR';
+
+                if (!content || !Array.isArray(content)) continue;
+
+                for (const item of content) {
+                    // Text content
+                    if (item.type === 'text' && item.text) {
+                        const prefix = isSubAgent ? '> ' : '';
+                        lines.push(`${prefix}### [${getTimestamp()}] 🤖 ${actor}`);
+                        lines.push('');
+                        lines.push('```md');
+                        lines.push(item.text);
+                        lines.push('```');
+                        lines.push('');
+                        currentTimestamp += 1;
+                    }
+
+                    // Tool use - render the call and immediately render its result if available
+                    if (item.type === 'tool_use') {
+                        const toolInfo = toolCalls.get(item.id);
+                        if (!toolInfo) continue;
+
+                        const toolName = toolInfo.name;
+                        const toolInput = toolInfo.input || {};
+                        const subagentType = toolInfo.subagent_type;
+
+                        // Format the call
+                        let callDescription = toolName;
+                        if (subagentType) {
+                            callDescription = `${toolName} (${subagentType})`;
+                        }
+
+                        const prefix = isSubAgent ? '> ' : '';
+                        lines.push(`${prefix}### [${getTimestamp()}] 🔧 ${actor} → ${callDescription}`);
+                        lines.push('');
+
+                        // Determine if input is JSON or text
+                        let isJsonInput = false;
+                        let inputContent = '';
+
+                        if (toolInput.prompt) {
+                            inputContent = toolInput.prompt;
+                        } else if (toolInput.command) {
+                            inputContent = toolInput.command;
+                        } else if (toolInput.description) {
+                            inputContent = toolInput.description;
+                        } else {
+                            isJsonInput = true;
+                            inputContent = JSON.stringify(toolInput, null, 2);
+                        }
+
+                        lines.push(isJsonInput ? '```json' : '```md');
+                        lines.push(inputContent);
+                        lines.push('```');
+                        lines.push('');
+                        currentTimestamp += 1;
+
+                        // === IMMEDIATELY RENDER RESULT IF AVAILABLE (but not for Task tools) ===
+                        // Task tools (sub-agents) should keep chronological order to show parallel execution
+                        const isTaskTool = toolInfo.name === 'Task';
+                        const resultData = toolResults.get(item.id);
+                        if (resultData && !renderedResults.has(item.id) && !isTaskTool) {
+                            const resultEntry = resultData.entry;
+                            const resultItem = resultData.item;
+
+                            // Mark as rendered to skip later
+                            renderedResults.add(item.id);
+
+                            // Determine if this is a sub-agent's tool result
+                            const isSubAgentToolResult = toolInfo.parent_tool_use_id != null;
+                            const resultPrefix = isSubAgentToolResult ? '> ' : '';
+
+                            // Determine the actor that made the tool call
+                            let resultActor = 'ORCHESTRATOR';
+                            if (isSubAgentToolResult) {
+                                const parentSubAgentType = subAgentContexts.get(toolInfo.parent_tool_use_id);
+                                resultActor = parentSubAgentType ? parentSubAgentType.toUpperCase() : 'SUB-AGENT';
+                            }
+
+                            // Get duration if available
+                            const duration = resultEntry.tool_use_result?.totalDurationMs;
+                            const durationStr = duration ? ` ⏱️ ${formatDuration(duration)}` : '';
+
+                            // Check if this is an error result
+                            const isError = resultItem.is_error === true;
+                            const statusIcon = isError ? '❌' : '📥';
+
+                            // Determine the receiver
+                            const receiver = toolInfo.subagent_type ? 'ORCHESTRATOR' : resultActor;
+
+                            lines.push(`${resultPrefix}**→ Result:** ${statusIcon}${durationStr}`);
+                            lines.push('');
+
+                            // Extract result content
+                            let resultText = '';
+                            if (resultEntry.tool_use_result?.content) {
+                                resultText = extractTextContent(resultEntry.tool_use_result.content);
+                            } else if (Array.isArray(resultItem.content)) {
+                                resultText = resultItem.content
+                                    .filter(c => c.type === 'text')
+                                    .map(c => c.text)
+                                    .join('\n');
+                            } else if (typeof resultItem.content === 'string') {
+                                resultText = resultItem.content;
+                            }
+
+                            // For error results, add an error indicator
+                            if (isError && resultText) {
+                                lines.push('```');
+                                lines.push(`ERROR: ${resultText}`);
+                                lines.push('```');
+                            } else if (resultText) {
+                                lines.push('```md');
+                                lines.push(resultText);
+                                lines.push('```');
+                            }
+
+                            lines.push('');
+                            currentTimestamp += 2;
+                        }
+                    }
+                }
+            }
+
+            // === USER MESSAGE (Tool prompts to sub-agents) ===
+            if (entry.type === 'user' && entry.message && entry.parent_tool_use_id) {
+                // Check if this message contains tool results - if so, don't skip it
+                const hasToolResults = entry.message.content?.some(item => item.type === 'tool_result');
+                if (!hasToolResults) {
+                    // This is the prompt being sent to a sub-agent, we already captured it in tool_use
+                    // Skip to avoid duplication
+                    continue;
+                }
+                // If it has tool results, fall through to the TOOL RESULT section below
+            }
+
+            // === TOOL RESULT === (only render if not already rendered with call)
+            if (entry.type === 'user' && entry.message?.content) {
+                const content = entry.message.content;
+
+                for (const item of content) {
+                    if (item.type === 'tool_result' && item.tool_use_id) {
+                        // Skip if already rendered with its call
+                        if (renderedResults.has(item.tool_use_id)) {
+                            continue;
+                        }
+
+                        const toolInfo = toolCalls.get(item.tool_use_id);
+                        if (!toolInfo) continue;
+
+                        // Mark as rendered
+                        renderedResults.add(item.tool_use_id);
+
+                        // Determine if this is a sub-agent's tool result or orchestrator's tool result
+                        const isSubAgentToolResult = toolInfo.parent_tool_use_id != null;
+                        const prefix = isSubAgentToolResult ? '> ' : '';
+
+                        // Determine the actor that made the tool call
+                        let actor = 'ORCHESTRATOR';
+                        if (isSubAgentToolResult) {
+                            const parentSubAgentType = subAgentContexts.get(toolInfo.parent_tool_use_id);
+                            actor = parentSubAgentType ? parentSubAgentType.toUpperCase() : 'SUB-AGENT';
+                        }
+
+                        let callDescription = toolInfo.name;
+                        if (toolInfo.subagent_type) {
+                            callDescription = `${toolInfo.name} (${toolInfo.subagent_type})`;
+                        }
+
+                        // Get duration if available
+                        const duration = entry.tool_use_result?.totalDurationMs;
+                        const durationStr = duration ? ` ⏱️ ${formatDuration(duration)}` : '';
+
+                        // Check if this is an error result
+                        const isError = item.is_error === true;
+                        const statusIcon = isError ? '❌' : '📥';
+
+                        // Determine the receiver - for Task tool results, it's the orchestrator
+                        // For sub-agent tool results, it's the sub-agent that called it
+                        const receiver = toolInfo.subagent_type ? 'ORCHESTRATOR' : actor;
+
+                        lines.push(`${prefix}### [${getTimestamp()}] ${statusIcon} ${callDescription} → ${receiver}${durationStr}`);
+                        lines.push('');
+
+                        // Extract result content
+                        let resultText = '';
+                        if (entry.tool_use_result?.content) {
+                            resultText = extractTextContent(entry.tool_use_result.content);
+                        } else if (Array.isArray(item.content)) {
+                            resultText = item.content
+                                .filter(c => c.type === 'text')
+                                .map(c => c.text)
+                                .join('\n');
+                        } else if (typeof item.content === 'string') {
+                            resultText = item.content;
+                        }
+
+                        // For error results, add an error indicator
+                        if (isError && resultText) {
+                            lines.push('```');
+                            lines.push(`ERROR: ${resultText}`);
+                            lines.push('```');
+                        } else if (resultText) {
+                            lines.push('```md');
+                            lines.push(resultText);
+                            lines.push('```');
+                        }
+
+                        lines.push('');
+                        currentTimestamp += 2;
+                    }
+                }
+            }
+
+            // === FINAL RESULT ===
+            if (entry.type === 'result') {
+                lines.push('---');
+                lines.push('');
+                lines.push(`## 🏁 Session Complete`);
+                lines.push('');
+
+                if (entry.subtype === 'success') {
+                    lines.push(`**Status:** ✅ Success`);
+                } else {
+                    lines.push(`**Status:** ❌ ${entry.subtype || 'Error'}`);
+                }
+
+                if (entry.duration_ms) {
+                    lines.push(`**Total Duration:** ${formatDuration(entry.duration_ms)}`);
+                }
+                if (entry.num_turns) {
+                    lines.push(`**Turns:** ${entry.num_turns}`);
+                }
+                if (entry.total_cost_usd) {
+                    lines.push(`**Cost:** $${entry.total_cost_usd.toFixed(4)}`);
+                }
+            }
+        }
+
+        return lines.join('\n');
+    }
+
+    // === DOM ELEMENTS ===
+    const instructionsInput = document.getElementById('instructions');
+    const runButton = document.getElementById('runButton');
+    const clearButton = document.getElementById('clearButton');
+    const copyMdButton = document.getElementById('copyMdButton');
+    const copyJsonButton = document.getElementById('copyJsonButton');
+    const formatButton = document.getElementById('formatButton');
+    const outputMarkdown = document.getElementById('outputMarkdown');
+    const outputJson = document.getElementById('outputJson');
+    const statusBadge = document.getElementById('statusBadge');
+    const tabMarkdown = document.getElementById('tabMarkdown');
+    const tabJson = document.getElementById('tabJson');
+
+    let eventSource = null;
+    let rawJsonlOutput = '';
+    let rawMarkdownText = '';
+    let currentTab = 'markdown';
+
+    // === TAB SWITCHING ===
+    function switchTab(tab) {
+      currentTab = tab;
+
+      if (tab === 'markdown') {
+        tabMarkdown.classList.add('active');
+        tabJson.classList.remove('active');
+        outputMarkdown.classList.remove('hidden');
+        outputJson.classList.add('hidden');
+        formatButton.classList.add('hidden');
+        copyMdButton.classList.remove('hidden');
+        copyJsonButton.classList.add('hidden');
+      } else {
+        tabMarkdown.classList.remove('active');
+        tabJson.classList.add('active');
+        outputMarkdown.classList.add('hidden');
+        outputJson.classList.remove('hidden');
+        formatButton.classList.remove('hidden');
+        copyMdButton.classList.add('hidden');
+        copyJsonButton.classList.remove('hidden');
+      }
+    }
+
+    // === MARKDOWN RENDERING ===
+    function updateMarkdownView() {
+      rawMarkdownText = convertToMarkdown(rawJsonlOutput);
+      const htmlContent = marked.parse(rawMarkdownText);
+      outputMarkdown.innerHTML = htmlContent;
+    }
+
+    // === JSON FORMATTING ===
+    function formatOutput(content) {
+      // Split by newlines to handle multiple JSON objects
+      const lines = content.split('\n');
+      return lines.map(line => {
+        if (!line.trim()) return line; // Preserve empty lines
+
+        try {
+          const parsed = JSON.parse(line);
+          return JSON.stringify(parsed, null, 4);
+        } catch (e) {
+          // Not valid JSON, return as-is
+          return line;
+        }
+      }).join('\n');
+    }
+
+    // === STATUS MANAGEMENT ===
+    function setStatus(status) {
+      // status: 'idle' | 'running' | 'done'
+      statusBadge.classList.remove('bg-blue-100', 'text-blue-600', 'bg-yellow-100', 'text-yellow-700', 'bg-green-100', 'text-green-700', 'animate-pulse-status');
+      outputMarkdown.classList.remove('border-blue-300', 'border-yellow-400', 'border-green-500');
+      outputJson.classList.remove('border-blue-300', 'border-yellow-400', 'border-green-500');
+
+      if (status === 'idle') {
+        statusBadge.textContent = 'Idle';
+        statusBadge.classList.add('bg-blue-100', 'text-blue-600');
+        outputMarkdown.classList.add('border-blue-300');
+        outputJson.classList.add('border-blue-300');
+        copyMdButton.disabled = false;
+        copyJsonButton.disabled = false;
+        clearButton.disabled = false;
+        formatButton.disabled = false;
+      } else if (status === 'running') {
+        statusBadge.textContent = 'Running';
+        statusBadge.classList.add('bg-yellow-100', 'text-yellow-700', 'animate-pulse-status');
+        outputMarkdown.classList.add('border-yellow-400');
+        outputJson.classList.add('border-yellow-400');
+        copyMdButton.disabled = true;
+        copyJsonButton.disabled = true;
+        clearButton.disabled = true;
+        formatButton.disabled = true;
+      } else if (status === 'done') {
+        statusBadge.textContent = 'Done';
+        statusBadge.classList.add('bg-green-100', 'text-green-700');
+        outputMarkdown.classList.add('border-green-500');
+        outputJson.classList.add('border-green-500');
+        copyMdButton.disabled = false;
+        copyJsonButton.disabled = false;
+        clearButton.disabled = false;
+        formatButton.disabled = false;
+      }
+    }
+
+    // Load saved instructions on page load
+    async function loadInstructions() {
+      try {
+        const response = await fetch('/api/instructions');
+        const { instructions } = await response.json();
+        if (instructions) {
+          instructionsInput.value = instructions;
+        }
+      } catch (e) {
+        console.error('Failed to load instructions:', e);
+      }
+    }
+    loadInstructions();
+
+    runButton.addEventListener('click', async () => {
+      const instructions = instructionsInput.value.trim();
+
+      if (!instructions) {
+        alert('Please enter instructions before running the test.');
+        return;
+      }
+
+      // Close any existing connection
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+
+      // Reset output state
+      rawJsonlOutput = '';
+      rawMarkdownText = '';
+
+      runButton.disabled = true;
+      runButton.textContent = 'Starting...';
+      outputJson.textContent = 'Starting job...';
+      outputMarkdown.innerHTML = '<div class="text-gray-500 italic">Processing... Markdown will render when streaming completes.</div>';
+      setStatus('running');
+
+      // Save instructions before running
+      await fetch('/api/instructions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instructions })
+      });
+
+      let stderrOutput = '';
+
+      try {
+        // Step 1: Start the job via POST
+        const response = await fetch('/api/start-qa', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ instructions })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          outputJson.textContent = `Error: ${data.error || 'Unknown error occurred'}`;
+          outputMarkdown.innerHTML = `<div class="text-red-600">Error: ${data.error || 'Unknown error occurred'}</div>`;
+          runButton.disabled = false;
+          runButton.textContent = 'Run QA Test';
+          setStatus('done');
+          return;
+        }
+
+        const { jobId } = await response.json();
+        console.log('Job started:', jobId);
+
+        runButton.textContent = 'Running...';
+        outputJson.textContent = 'Connecting to stream...\n';
+
+        // Step 2: Connect to SSE stream for this job
+        eventSource = new EventSource(`/api/stream/${jobId}`);
+
+        eventSource.onopen = () => {
+          console.log('EventSource connected');
+          outputJson.textContent = 'Connected. Waiting for output...\n\n';
+        };
+
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('Received:', data);
+
+            if (data.type === 'stdout') {
+              // Clear initial message on first content
+              if (outputJson.textContent === 'Connected. Waiting for output...\n\n') {
+                outputJson.textContent = '';
+                outputMarkdown.innerHTML = '';
+              }
+              outputJson.textContent += data.content;
+              rawJsonlOutput += data.content;
+              // Update markdown view in real-time
+              updateMarkdownView();
+              // Auto-scroll to bottom
+              outputJson.scrollTop = outputJson.scrollHeight;
+            } else if (data.type === 'stderr') {
+              stderrOutput += data.content;
+            } else if (data.type === 'done') {
+              if (stderrOutput) {
+                outputJson.textContent += '\n\n--- STDERR ---\n' + stderrOutput;
+                rawJsonlOutput += '\n\n--- STDERR ---\n' + stderrOutput;
+              }
+              // Render markdown when streaming is complete
+              updateMarkdownView();
+              eventSource.close();
+              eventSource = null;
+              runButton.disabled = false;
+              runButton.textContent = 'Run QA Test';
+              setStatus('done');
+            } else if (data.type === 'error') {
+              outputJson.textContent += `\n\n[Error: ${data.message}]`;
+              outputMarkdown.innerHTML = `<div class="text-red-600">Error: ${data.message}</div>`;
+              eventSource.close();
+              eventSource = null;
+              runButton.disabled = false;
+              runButton.textContent = 'Run QA Test';
+              setStatus('done');
+            }
+          } catch (e) {
+            console.error('Error parsing event:', e);
+          }
+        };
+
+        eventSource.onerror = (error) => {
+          console.error('EventSource error:', error);
+          outputJson.textContent += '\n\n[Connection error]';
+          outputMarkdown.innerHTML = '<div class="text-red-600">[Connection error]</div>';
+          eventSource.close();
+          eventSource = null;
+          runButton.disabled = false;
+          runButton.textContent = 'Run QA Test';
+          setStatus('done');
+        };
+
+      } catch (error) {
+        console.error('Fetch error:', error);
+        outputJson.textContent = `Network error: ${error.message}`;
+        outputMarkdown.innerHTML = `<div class="text-red-600">Network error: ${error.message}</div>`;
+        runButton.disabled = false;
+        runButton.textContent = 'Run QA Test';
+        setStatus('done');
+      }
+    });
+
+    // Clear button
+    clearButton.addEventListener('click', () => {
+      instructionsInput.value = '';
+    });
+
+    // Copy MD button - copies raw markdown text
+    copyMdButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(rawMarkdownText);
+        copyMdButton.textContent = 'Copied!';
+        setTimeout(() => { copyMdButton.textContent = 'Copy MD'; }, 2000);
+      } catch (e) {
+        console.error('Failed to copy:', e);
+      }
+    });
+
+    // Copy JSON button - copies raw JSONL
+    copyJsonButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(rawJsonlOutput);
+        copyJsonButton.textContent = 'Copied!';
+        setTimeout(() => { copyJsonButton.textContent = 'Copy JSON'; }, 2000);
+      } catch (e) {
+        console.error('Failed to copy:', e);
+      }
+    });
+
+    // Format button - formats JSON in the JSON view
+    formatButton.addEventListener('click', () => {
+      outputJson.textContent = formatOutput(outputJson.textContent);
+    });
+  </script>
+</body>
+</html>
