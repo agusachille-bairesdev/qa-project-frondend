@@ -5,9 +5,9 @@
   "description": "Local QA testing UI (proxy-only mode)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "QA_API_URL=http://localhost:4000 node server.js",
-    "prod": "QA_API_URL=https://qa-agent.growth-bairesdev.com node server.js"
+    "start": "node --env-file=.env server.js",
+    "dev": "node --env-file=.env server.js",
+    "prod": "node --env-file=.env.production server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
