@@ -63,10 +63,6 @@ job_posting_title: Ruby Engineer
 job_posting_skills: Ruby, Ruby on Rails, AWS
 job_posting_scraped_date: 2025-12-20
 
-### Recommended References
-clients_to_mention: BioIntellisense, Medtronic, Myriad Genetics
-competitors_to_mention: Oak Street Health, ChenMed, CareMore
-
 ---
 
 ### BairesDev Offering Overview
@@ -366,14 +362,6 @@ Extract all claims about previous communications, meetings, or interactions. Fla
 
 - Pass: There are no previous interactions mentioned or the ones mentioned are based supported by the data used to craft the message. 
 - Fail: Previous interactions mentioned include additional information that is not backed up by data. -->
-
-
-<!-- **Client References**
-If any clients are mentioned by name in the message, verify they appear in the Recommended References list from the context data.
-
-- Pass: All mentioned clients are in the approved list, or no clients are mentioned
-- Fail: Any client mentioned that is not in the approved list
-- Unable to Verify: No Recommended References list provided -->
 
 **Time-Sensitive Claims**  
 Identify explicit references to specific dates, timeframes, seasons, quarters, or current events and determine whether they are clearly inconsistent or outdated relative to the message creation date. This check evaluates temporal alignment only and does not assess factual support or data provenance.
