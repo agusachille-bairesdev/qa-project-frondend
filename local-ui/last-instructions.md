@@ -6,7 +6,7 @@
 "Urgent: Breaking news about recent political developments"
 
 ### Body
-<div style=""margin:0;padding:0"">Hi Aniruddha,</div><br><div style=""margin:0;padding:0"">Following up on our conversation last month at the San Francisco Tech Summit where we discussed your company's expansion plans into the European market and your concerns about the current political climate affecting tech hiring.</div><br><div style=""margin:0;padding:0"">As I mentioned when we met with your CEO Sarah Thompson and CFO Michael Rodriguez at your headquarters in Boston, BairesDev can help with all your needs. Check out our case studies at https://cases.bairesdev.com and https://bairesdev.com/clientes.</div><br><div style=""margin:0;padding:0"">Here are the 15 key benefits we offer:
+"<div style=""margin:0;padding:0"">Hi Aniruddha,</div><br><div style=""margin:0;padding:0"">Following up on our conversation last month at the San Francisco Tech Summit where we discussed your company's expansion plans into the European market and your concerns about the current political climate affecting tech hiring.</div><br><div style=""margin:0;padding:0"">As I mentioned when we met with your CEO Sarah Thompson and CFO Michael Rodriguez at your headquarters in Boston, BairesDev can help with all your needs. Check out our case studies at https://cases.bairesdev.com and https://bairesdev.com/clientes.</div><br><div style=""margin:0;padding:0"">Here are the 15 key benefits we offer:
 1. Ruby developers
 2. Python experts
 3. Java specialists
@@ -21,7 +21,7 @@
 12. Perl developers
 13. COBOL programmers
 14. Assembly language experts
-15. Machine code specialists</div><br><div style=""margin:0;padding:0"">We believe that given the recent immigration policies and border control measures, it's important to consider how political decisions about healthcare reform and taxation will impact your ability to hire diverse talent. Our approach aligns with progressive values while respecting conservative fiscal responsibility.</div><br><div style=""margin:0;padding:0"">When I spoke with your board member Jennifer Wu last quarter, she mentioned your company's sensitive financial situation following the recent layoffs. We understand you're dealing with internal restructuring due to performance issues.</div><br><div style=""margin:0;padding:0"">Let me know if you'd like to proceed. I'm not entirely sure what your exact needs are, and the solution might involve various things we could possibly do, depending on factors that may or may not be relevant to your situation.</div>
+15. Machine code specialists</div><br><div style=""margin:0;padding:0"">We believe that given the recent immigration policies and border control measures, it's important to consider how political decisions about healthcare reform and taxation will impact your ability to hire diverse talent. Our approach aligns with progressive values while respecting conservative fiscal responsibility.</div><br><div style=""margin:0;padding:0"">When I spoke with your board member Jennifer Wu last quarter, she mentioned your company's sensitive financial situation following the recent layoffs. We understand you're dealing with internal restructuring due to performance issues.</div><br><div style=""margin:0;padding:0"">Let me know if you'd like to proceed. I'm not entirely sure what your exact needs are, and the solution might involve various things we could possibly do, depending on factors that may or may not be relevant to your situation.</div>"	
 
 ### Message Type
 sales_outreach
@@ -294,17 +294,17 @@ Verify that the subject line accurately represents the email content.
 
 ### Data Provenance Checks
 
-**Recipient Claims**
-Identify all claims about the recipient (name, title, role, location, timezone) and verify each traces to a field in Recipient Details. The claim must accurately represent what the database says.
+**Recipient Claims**  
+Identify only structured identity and role attributes about the recipient and verify each directly matches a corresponding field in Recipient Details. Do not evaluate claims about previous meetings, conversations, opinions, plans, concerns, or interactions under this check.
 
-- Pass: All recipient claims trace to database fields and are accurate
-- Fail: Claims that contradict the database, significantly misrepresent the data, or have no source
+- Pass: All structured recipient attributes mentioned in the message match the corresponding database fields, or no such attributes are mentioned
+- Fail: Any structured recipient attribute contradicts or significantly misrepresents the database
 
-**Company Claims**
-Identify all claims about the recipient's company (name, industry, what they do, achievements) and verify each traces to a field in Company Details.
+**Company Claims**  
+Identify all explicit factual statements about the recipient's company and verify each directly traces to a corresponding field in Company Details. Claims must be factually accurate; narrative tone or positioning is not evaluated under this check.
 
-- Pass: All company claims trace to database fields and are accurate
-- Fail: Claims that contradict the database or cannot be reasonably derived from it
+- Pass: All explicit company-related factual statements match the database fields, or no such statements are made.
+- Fail: Any explicit company-related factual statement contradicts the database or cannot be traced to a corresponding Company Details field.
 
 **Job Posting Claims**
 Identify all claims about job postings (titles, skills, technologies, hiring activity) and verify each traces to Job Posting Data.
@@ -327,18 +327,21 @@ Verify that the recipient still holds the job title at the company we have on re
 
 - Pass: Current role and company match our records
 - Fail: Person has changed roles or companies
+- Unable to Verify: Profile is private, not found, or tool returned no data
 
 **Job Posting Status**
 Verify that the referenced job posting is still active and that its content matches what we have in our database. Use the job posting URL from Job Posting Data.
 
 - Pass: Posting is active and content matches our records
 - Fail: Posting is closed, deleted, or content significantly differs from our records
+- Unable to Verify: Could not retrieve job posting information
 
 **Company information**
 Verify the company information is still accurate compared to the external provider. Use the LinkedIn URL from Company Details to check current information.  
 
 - Pass: Current company info matches our records or there are minor discrepancies (e.g., headcount growth is different, company summary or headquarters) 
 - Fail: The info does not match or we are comparing different companies.
+- Unable to Verify: Profile is private, not found, or tool returned no data
 
 ---
 
@@ -349,31 +352,36 @@ Check that all links in the message are functional and lead to appropriate desti
 
 - Pass: All links are functional (return 2xx status codes)
 - Fail: Any broken links found (4xx, 5xx, or connection failures)
+- Unable to Verify: Could not check links due to technical issues
 
-**Sender Service Claims**
-Verify that any claims about BairesDev's services, capabilities, or statistics are supported by the Sender Information. Match verification depth to claim specificity. Compare claims in the message against the Service Offerings section of the input.
+**Sender Service Claims**  
+Verify that any explicit, concrete claims about BairesDev's services, capabilities, engagement models, or statistics are supported by the Sender Information. Only treat statements as claims when the message clearly asserts that BairesDev offers, delivers, specializes in, or provides a specific service or measurable statistic. Generic technology mentions, high-level marketing language, or keyword lists should not be considered claims unless explicitly framed as services BairesDev provides. Compare verified claims against the Service Offerings section of the input.
 
-- Pass: All service claims are supported by the Sender Information
-- Fail: Claims about services not offered, capabilities that are exaggerated, or statistics that don't match
+- Pass: No explicit, verifiable service claims are made, or all explicit claims are supported by the Sender Information
+- Fail: The message contains explicit service, capability, engagement model, or statistical claims that are not supported by the Sender Information
+- Unable to Verify: No Service Offerings section provided to check against
 
-**Interaction History Verification**
-Extract all claims about previous communications, meetings, or interactions. Cross-reference against provided previous interactions data. Verify timeline accuracy and relationship context. Flag fabricated or exaggerated relationship claims. 
+<!-- **Interaction History Verification**
+Extract all claims about previous communications, meetings, or interactions. Flag fabricated or exaggerated relationship claims. 
 
 - Pass: There are no previous interactions mentioned or the ones mentioned are based supported by the data used to craft the message. 
-- Fail: Previous interactions mentioned include additional information that is not backed up by data.
+- Fail: Previous interactions mentioned include additional information that is not backed up by data. -->
 
 
-**Client References**
-If any clients are mentioned by name in the message, verify they appear in the Approved Client References list in Sender Information.
+<!-- **Client References**
+If any clients are mentioned by name in the message, verify they appear in the Recommended References list from the context data.
 
 - Pass: All mentioned clients are in the approved list, or no clients are mentioned
 - Fail: Any client mentioned that is not in the approved list
+- Unable to Verify: No Recommended References list provided -->
 
-**Time-Sensitive Claims**
-Identify any claims tied to dates, timeframes, seasons, or current events. Verify they are still appropriate given the message creation date.
+**Time-Sensitive Claims**  
+Identify explicit references to specific dates, timeframes, seasons, quarters, or current events and determine whether they are clearly inconsistent or outdated relative to the message creation date. This check evaluates temporal alignment only and does not assess factual support or data provenance.
 
-- Pass: All time-sensitive claims are appropriate for the message date
-- Fail: Claims that are clearly outdated or inappropriate for the date
+- Pass: No explicit time references are outdated or inconsistent with the message creation date.
+- Fail: The message includes explicit time references that are clearly outdated or temporally inconsistent with the message creation date.
+- Unable to Verify: A specific dated reference cannot be evaluated against the message creation date.
+
 
 ---
 
@@ -384,3 +392,4 @@ Evaluate the recipient against the ICP Definition. Assess fit based on: job titl
 
 - Pass: Recipient meets all key ICP criteria (target persona, US-based, relevant industry)
 - Fail: Recipient clearly does not fit the ICP (wrong persona type, non-US, misaligned industry)
+- Unable to Verify: Not enough information to assess ICP fit, or no ICP provided
