@@ -217,14 +217,14 @@ BairesDev is a **nearshore software development and IT staff augmentation compan
 **Grammar and Spelling**
 Check for grammatical errors, spelling mistakes, lack of capitalization, punctuation problems, and awkward phrasing. The standard is professional business communication.
 
-- Pass: No errors found
-- Fail: Obvious errors that would reflect poorly on the sender
+- Pass: No errors found.
+- Fail: Obvious errors that would reflect poorly on the sender.
 
 **Unreplaced Placeholders**
 Scan for any template tokens that should have been replaced with actual values, such as {{field_name}} or similar patterns.
 
-- Pass: No unreplaced placeholders found
-- Fail: Any unreplaced placeholder found
+- Pass: No unreplaced placeholders found.
+- Fail: Any unreplaced placeholder found.
 
 **Length & Readability**
 Assess if length (in body and subject) is appropriate for context. Evaluate sentence and paragraph structure. Verify the email is easy to scan and understand. Ensure subject isn't overly verbose or cryptically brief. 
@@ -241,8 +241,8 @@ Cross-reference customizations against Recipient Information. Verify personalize
 **Tone**
 Evaluate whether the tone is professional and confident without being aggressive or pushy. Should not sound desperate or overly salesy.
 
-- Pass: Tone is appropriate for professional sales outreach
-- Fail: Tone is clearly inappropriate (too aggressive, desperate, or unprofessional)
+- Pass: Tone is appropriate for professional sales outreach.
+- Fail: Tone is clearly inappropriate (too aggressive, desperate, or unprofessional).
 
 **Logical Flow & Coherence**
 Verify smooth transitions and logical sequence. Check that opening hooks attention effectively. Ensure closing leads naturally to call-to-action. Identify any abrupt topic changes.
@@ -283,8 +283,8 @@ Verify appropriate spacing and layout. Check for excessive whitespace or crowded
 **Subject-Body Alignment**
 Verify that the subject line accurately represents the email content.
 
-- Pass: Subject accurately reflects the email content
-- Fail: Subject is misleading or contradicts the email content
+- Pass: Subject accurately reflects the email content.
+- Fail: Subject is misleading or contradicts the email content.
 
 ---
 
@@ -293,8 +293,8 @@ Verify that the subject line accurately represents the email content.
 **Recipient Claims**  
 Identify only structured identity and role attributes about the recipient and verify each directly matches a corresponding field in Recipient Details. Do not evaluate claims about previous meetings, conversations, opinions, plans, concerns, or interactions under this check.
 
-- Pass: All structured recipient attributes mentioned in the message match the corresponding database fields, or no such attributes are mentioned
-- Fail: Any structured recipient attribute contradicts or significantly misrepresents the database
+- Pass: All structured recipient attributes mentioned in the message match the corresponding database fields, or no such attributes are mentioned.
+- Fail: Any structured recipient attribute contradicts or significantly misrepresents the database.
 
 **Company Claims**  
 Identify all explicit factual statements about the recipient's company and verify each directly traces to a corresponding field in Company Details. Claims must be factually accurate; narrative tone or positioning is not evaluated under this check.
@@ -305,14 +305,14 @@ Identify all explicit factual statements about the recipient's company and verif
 **Job Posting Claims**
 Identify all claims about job postings (titles, skills, technologies, hiring activity) and verify each traces to Job Posting Data.
 
-- Pass: All job posting claims match the database records
-- Fail: Claims about postings that don't match or don't exist in the database
+- Pass: All job posting claims match the database records.
+- Fail: Claims about postings that don't match or don't exist in the database.
 
 **Unsupported Personalizations**
 Identify any personalized claims that have no corresponding source in the database at all. These are potential hallucinations.
 
-- Pass: All personalized claims have identifiable sources in the context data
-- Fail: Any personalized claim found with no corresponding database source
+- Pass: All personalized claims have identifiable sources in the context data.
+- Fail: Any personalized claim found with no corresponding database source.
 
 ---
 
@@ -321,23 +321,23 @@ Identify any personalized claims that have no corresponding source in the databa
 **Recipient Current Role**
 Verify that the recipient still holds the job title at the company we have on record. Use the LinkedIn URL from Recipient Details to check current information.
 
-- Pass: Current role and company match our records
-- Fail: Person has changed roles or companies
-- Unable to Verify: Profile is private, not found, or tool returned no data
+- Pass: Current role and company match our records.
+- Fail: Person has changed roles or companies.
+- Unable to Verify: Profile is private, not found, or tool returned no data.
 
 **Job Posting Status**
 Verify that the referenced job posting is still active and that its content matches what we have in our database. Use the job posting URL from Job Posting Data.
 
-- Pass: Posting is active and content matches our records
-- Fail: Posting is closed, deleted, or content significantly differs from our records
-- Unable to Verify: Could not retrieve job posting information
+- Pass: Posting is active and content matches our records.
+- Fail: Posting is closed, deleted, or content significantly differs from our records.
+- Unable to Verify: Could not retrieve job posting information.
 
 **Company information**
 Verify the company information is still accurate compared to the external provider. Use the LinkedIn URL from Company Details to check current information.  
 
-- Pass: Current company info matches our records or there are minor discrepancies (e.g., headcount growth is different, company summary or headquarters) 
+- Pass: Current company info matches our records or there are minor discrepancies (e.g., headcount growth is different, company summary or headquarters).
 - Fail: The info does not match or we are comparing different companies.
-- Unable to Verify: Profile is private, not found, or tool returned no data
+- Unable to Verify: Profile is private, not found, or tool returned no data.
 
 ---
 
@@ -346,22 +346,23 @@ Verify the company information is still accurate compared to the external provid
 **Link Validation**
 Check that all links in the message are functional and lead to appropriate destinations.
 
-- Pass: All links are functional (return 2xx status codes)
-- Fail: Any broken links found (4xx, 5xx, or connection failures)
-- Unable to Verify: Could not check links due to technical issues
+- Pass: All links are functional (return 2xx status codes).
+- Fail: Any broken links found (4xx, 5xx, or connection failures).
+- Unable to Verify: Could not check links due to technical issues.
 
 **Sender Service Claims**  
 Verify that any explicit, concrete claims about BairesDev's services, capabilities, engagement models, or statistics are supported by the Sender Information. Only treat statements as claims when the message clearly asserts that BairesDev offers, delivers, specializes in, or provides a specific service or measurable statistic. Generic technology mentions, high-level marketing language, or keyword lists should not be considered claims unless explicitly framed as services BairesDev provides. Compare verified claims against the Service Offerings section of the input.
 
-- Pass: No explicit, verifiable service claims are made, or all explicit claims are supported by the Sender Information
-- Fail: The message contains explicit service, capability, engagement model, or statistical claims that are not supported by the Sender Information
-- Unable to Verify: No Service Offerings section provided to check against
+- Pass: No explicit, verifiable service claims are made, or all explicit claims are supported by the Sender Information.
+- Fail: The message contains explicit service, capability, engagement model, or statistical claims that are not supported by the Sender Information.
+- Unable to Verify: No Service Offerings section provided to check against.
 
-<!-- **Interaction History Verification**
-Extract all claims about previous communications, meetings, or interactions. Flag fabricated or exaggerated relationship claims. 
+**Interaction History Verification**
+Extract all claims about previous communications, meetings, or interactions. Cross-reference against any provided previous interactions data present in both Recipient Details and Company Details. Verify timeline accuracy and relationship context. Flag fabricated or exaggerated relationship claims.
 
 - Pass: There are no previous interactions mentioned or the ones mentioned are based supported by the data used to craft the message. 
-- Fail: Previous interactions mentioned include additional information that is not backed up by data. -->
+- Fail: Previous interactions mentioned include additional information that is not backed up by data.
+- Unable to Verify: No previous interaction data is provided in Recipient Details or Company Details.
 
 **Time-Sensitive Claims**  
 Identify explicit references to specific dates, timeframes, seasons, quarters, or current events and determine whether they are clearly inconsistent or outdated relative to the message creation date. This check evaluates temporal alignment only and does not assess factual support or data provenance.
@@ -378,6 +379,6 @@ Identify explicit references to specific dates, timeframes, seasons, quarters, o
 **ICP Fit**
 Evaluate the recipient against the ICP Definition. Assess fit based on: job title matching target buyer personas, company industry alignment, company location (US-based), and apparent hiring challenges or triggers.
 
-- Pass: Recipient meets all key ICP criteria (target persona, US-based, relevant industry)
-- Fail: Recipient clearly does not fit the ICP (wrong persona type, non-US, misaligned industry)
-- Unable to Verify: Not enough information to assess ICP fit, or no ICP provided
+- Pass: Recipient meets all key ICP criteria (target persona, US-based, relevant industry).
+- Fail: Recipient clearly does not fit the ICP (wrong persona type, non-US, misaligned industry).
+- Unable to Verify: Not enough information to assess ICP fit, or no ICP provided.
