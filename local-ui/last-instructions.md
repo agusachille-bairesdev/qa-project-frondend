@@ -291,10 +291,10 @@ Verify that the subject line accurately represents the email content.
 ### Data Provenance Checks
 
 **Recipient Claims**  
-Identify only structured identity and role attributes about the recipient and verify each directly matches a corresponding field in Recipient Details. Do not evaluate claims about previous meetings, conversations, opinions, plans, concerns, or interactions under this check.
+Identify only structured identity and role attributes explicitly stated in the message (e.g., first name, last name, greeting name, job title, department, responsibility level, city, state, country, timezone, education) and verify each directly matches a corresponding field in Recipient Details. Evaluate each attribute independently and ignore surrounding narrative context. Do not evaluate meetings, conversations, opinions, plans, concerns, expansion statements, or any interaction history under this check.
 
-- Pass: All structured recipient attributes mentioned in the message match the corresponding database fields, or no such attributes are mentioned.
-- Fail: Any structured recipient attribute contradicts or significantly misrepresents the database.
+- Pass: Every structured recipient attribute explicitly mentioned matches the corresponding database field, or no structured attributes are mentioned.
+- Fail: Any structured recipient attribute explicitly mentioned contradicts or significantly misrepresents the corresponding database field.
 
 **Company Claims**  
 Identify all explicit factual statements about the recipient's company and verify each directly traces to a corresponding field in Company Details. Claims must be factually accurate; narrative tone or positioning is not evaluated under this check.
@@ -357,12 +357,12 @@ Verify that any explicit, concrete claims about BairesDev's services, capabiliti
 - Fail: The message contains explicit service, capability, engagement model, or statistical claims that are not supported by the Sender Information.
 - Unable to Verify: No Service Offerings section provided to check against.
 
-**Interaction History Verification**
-Extract all claims about previous communications, meetings, or interactions. Cross-reference against any provided previous interactions data present in both Recipient Details and Company Details. Verify timeline accuracy and relationship context. Flag fabricated or exaggerated relationship claims.
+**Interaction History Verification**  
+Extract all claims about previous communications, meetings, or interactions. Cross-reference only against explicit previous interaction data provided in Recipient Details or Company Details. This check evaluates contradiction, not absence of data.
 
-- Pass: There are no previous interactions mentioned or the ones mentioned are based supported by the data used to craft the message. 
-- Fail: Previous interactions mentioned include additional information that is not backed up by data.
-- Unable to Verify: No previous interaction data is provided in Recipient Details or Company Details.
+- Pass: No previous interactions are mentioned, or all mentioned interactions match the provided interaction data.
+- Fail: A mentioned interaction directly contradicts specific interaction data provided in Recipient Details or Company Details.
+- Unable to Verify: No previous interaction data is provided in Recipient Details or Company Details, or the available data is insufficient to confirm or contradict the claim.
 
 **Time-Sensitive Claims**  
 Identify explicit references to specific dates, timeframes, seasons, quarters, or current events and determine whether they are clearly inconsistent or outdated relative to the message creation date. This check evaluates temporal alignment only and does not assess factual support or data provenance.
@@ -370,7 +370,6 @@ Identify explicit references to specific dates, timeframes, seasons, quarters, o
 - Pass: No explicit time references are outdated or inconsistent with the message creation date.
 - Fail: The message includes explicit time references that are clearly outdated or temporally inconsistent with the message creation date.
 - Unable to Verify: A specific dated reference cannot be evaluated against the message creation date.
-
 
 ---
 
